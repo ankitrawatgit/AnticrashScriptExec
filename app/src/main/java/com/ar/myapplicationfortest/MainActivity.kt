@@ -1,7 +1,10 @@
 package com.ar.myapplicationfortest
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
@@ -26,6 +29,18 @@ class MainActivity : AppCompatActivity() {
         val textView=findViewById<TextView>(R.id.textView4)
         val textView8=findViewById<TextView>(R.id.textView8)
         val textView2= findViewById<TextView>(R.id.textView7)
+        val checkBox=findViewById<CheckBox>(R.id.checkBox)
+        val sharedPreference =  getSharedPreferences("PATH", Context.MODE_PRIVATE)
+        var editor = sharedPreference.edit()
+        val spath=sharedPreference.getString("path","")
+        val sname=sharedPreference.getString("script","")
+        if(spath!=null){
+            checkBox.isChecked=true
+            path.setText(spath)
+        }
+        if(sname!=null){
+            script.setText(sname)
+        }
 
 
         Runtime.getRuntime().exec("su")
@@ -33,6 +48,11 @@ class MainActivity : AppCompatActivity() {
             st=""
             val path= path.text.toString()
             val script= script.text.toString()
+            if(checkBox.isChecked){
+                editor.putString("path",path)
+                editor.putString("script",script)
+                editor.apply()
+            }
             val s= Runtime.getRuntime().exec("su -c cd $path && nohup ./$script &")
             findViewById<Button>(R.id.button).setText("Running...")
                 val inputStream = s.inputStream
@@ -41,7 +61,7 @@ class MainActivity : AppCompatActivity() {
                  val errorReader = BufferedReader(InputStreamReader(errorStream))
                 var line: String?
                 var errorLine: String?
-                    Thread(Runnable {
+                Thread(Runnable {
                         while (bufferedReader.readLine().also { line = it } != null) {
                             st+=line+"\n"
                             runOnUiThread(Runnable {  textView.setText(st) })
