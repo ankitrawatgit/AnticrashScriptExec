@@ -1,21 +1,18 @@
 package com.ar.myapplicationfortest
 
 import android.content.Context
-import android.content.SharedPreferences
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
-import android.widget.ImageButton
+import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.tananaev.adblib.AdbConnection
-import com.tananaev.adblib.AdbCrypto
-import org.w3c.dom.Text
+import androidx.appcompat.app.AppCompatDelegate
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import java.net.Socket
 
 
 class MainActivity : AppCompatActivity() {
@@ -23,12 +20,13 @@ class MainActivity : AppCompatActivity() {
         var st:String=""
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        supportActionBar!!.setTitle("Anti crash script")
+        supportActionBar!!.setTitle("Script Executer")
+       // AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         val path= findViewById<EditText>(R.id.path)
         val script= findViewById<EditText>(R.id.script)
         val textView=findViewById<TextView>(R.id.textView4)
-        val textView8=findViewById<TextView>(R.id.textView8)
-        val textView2= findViewById<TextView>(R.id.textView7)
+
+
         val checkBox=findViewById<CheckBox>(R.id.checkBox)
         val sharedPreference =  getSharedPreferences("PATH", Context.MODE_PRIVATE)
         var editor = sharedPreference.edit()
@@ -43,6 +41,8 @@ class MainActivity : AppCompatActivity() {
         }
 
 
+
+
         Runtime.getRuntime().exec("su")
         findViewById<Button>(R.id.button).setOnClickListener {
             st=""
@@ -54,7 +54,8 @@ class MainActivity : AppCompatActivity() {
                 editor.apply()
             }
             val s= Runtime.getRuntime().exec("su -c cd $path && nohup ./$script &")
-            findViewById<Button>(R.id.button).setText("Running...")
+            findViewById<Button>(R.id.button).setText("Executing...")
+                textView.setText("")
                 val inputStream = s.inputStream
                 val errorStream =s.errorStream
                 val bufferedReader = BufferedReader(InputStreamReader(inputStream))
@@ -64,31 +65,24 @@ class MainActivity : AppCompatActivity() {
                 Thread(Runnable {
                         while (bufferedReader.readLine().also { line = it } != null) {
                             st+=line+"\n"
-                            runOnUiThread(Runnable {  textView.setText(st) })
+                            runOnUiThread(Runnable {  textView.setText(st)
+                                findViewById<Button>(R.id.button).setText("Execute")
+                            })
 
                         }
                         while (errorReader.readLine().also { errorLine = it } != null) {
-                            st+=line+"\n"
-                            runOnUiThread(Runnable {  textView8.setText(st) })
+                            st += line + "\n"
+                            runOnUiThread(Runnable {
+                                textView.setText(st)
+                                findViewById<Button>(R.id.button).setText("Execute")
+                            })
 
-                    }}).start()
 
-
+                        }
+                }).start()
 
 
 
         }
 
-        findViewById<Button>(R.id.button2).setOnClickListener {
-            var ss:String=""
-            findViewById<Button>(R.id.button).setText("Start")
-            val s= Runtime.getRuntime().exec("killall $script")
-            val errorStream = s.errorStream
-            val bufferedReader = BufferedReader(InputStreamReader(errorStream))
-            var line: String?
-            while (bufferedReader.readLine().also { line = it } != null) {
-                ss+=line+"\n"
-            }
-            ss+="If not stoped You can use STOP button on your script window or Restart device!"
-            textView2.setText(ss)
-    }}}
+     }}
